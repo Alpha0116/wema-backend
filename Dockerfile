@@ -9,14 +9,18 @@ ENV NGINX_PORT=8080
 
 WORKDIR /var/www/html
 
+USER root
+
 # Copy application files
 COPY --chown=9999:9999 . /var/www/html/
 
-# Ensure storage and database folders exist and are writable by the container user
+# Ensure storage and database folders exist and are writable
 RUN mkdir -p /var/www/html/storage /var/www/html/database /var/www/html/bootstrap/cache \
     && touch /var/www/html/database/database.sqlite \
     && chown -R 9999:9999 /var/www/html/storage /var/www/html/database /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/database /var/www/html/bootstrap/cache
+
+USER 9999
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
