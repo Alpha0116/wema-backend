@@ -1,16 +1,22 @@
 FROM serversideup/php:8.3-fpm-nginx
 
 ENV AUTORUN_ENABLED=true
+ENV AUTORUN_LARAVEL_MIGRATION=true
+ENV AUTORUN_LARAVEL_STORAGE_LINK=true
 ENV SSL_MODE=off
 ENV PHP_OPCACHE_ENABLE=1
+ENV NGINX_PORT=8080
 
 WORKDIR /var/www/html
 
 # Copy application files
 COPY --chown=9999:9999 . /var/www/html/
 
-# Prepare .env for build
-RUN cp /var/www/html/.env.example /var/www/html/.env || true
+# Ensure storage and database folders exist and are writable by the container user
+RUN mkdir -p /var/www/html/storage /var/www/html/database /var/www/html/bootstrap/cache \
+    && touch /var/www/html/database/database.sqlite \
+    && chown -R 9999:9999 /var/www/html/storage /var/www/html/database /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/database /var/www/html/bootstrap/cache
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
