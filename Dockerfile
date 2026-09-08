@@ -12,7 +12,7 @@ COPY --chown=9999:9999 . /var/www/html/
 # Prepare .env for build
 RUN cp /var/www/html/.env.example /var/www/html/.env || true
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+# Install PHP dependencies with platform reqs ignored for cloud compatibility
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-reqs
 
 EXPOSE 8080
