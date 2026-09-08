@@ -1,29 +1,28 @@
-FROM serversideup/php:8.3-fpm-nginx
+FROM php:8.3-cli-alpine
 
-ENV AUTORUN_ENABLED=true
-ENV AUTORUN_LARAVEL_MIGRATION=true
-ENV AUTORUN_LARAVEL_STORAGE_LINK=true
-ENV SSL_MODE=off
-ENV PHP_OPCACHE_ENABLE=1
-ENV NGINX_PORT=8080
+# Install required PHP extensions for Laravel & SQLite
+RUN apk add --no-cache sqlite sqlite-dev oniguruma-dev libpng-dev \
+    && docker-php-ext-install pdo pdo_sqlite mbstring bcmath gd
+
+# Copy Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-USER root
+# Copy code
+COPY . /var/www/html/
 
-# Copy application files
-COPY --chown=9999:9999 . /var/www/html/
+# Prepare default .env
+RUN cp .env.example .env || true
 
-# Ensure storage, database, and vendor folders exist with full permissions
-RUN mkdir -p /var/www/html/storage /var/www/html/database /var/www/html/bootstrap/cache /var/www/html/vendor \
-    && touch /var/www/html/database/database.sqlite \
-    && chown -R 9999:9999 /var/www/html \
-    && chmod -R 775 /var/www/html/storage /var/www/html/database /var/www/html/bootstrap/cache /var/www/html/vendor
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
-# Install PHP dependencies as root to guarantee full access to vendor and composer cache
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts \
-    && chown -R 9999:9999 /var/www/html/vendor
-
-USER 9999
+# Setup SQLite DB & permissions
+RUN mkdir -p database storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && touch database/database.sqlite \
+    && chmod -R 777 storage bootstrap/cache database
 
 EXPOSE 8080
+
+CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php artisan storage:link || true && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
