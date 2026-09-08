@@ -1,0 +1,10 @@
+# Root gitignore
+.DS_Store
+*.log
+scratch/
+backend/.env
+backend/vendor/
+backend/node_modules/
+backend/public/storage
+backend/storage/*.key
+backend/database/database.sqlite
