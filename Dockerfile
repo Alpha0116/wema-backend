@@ -7,7 +7,7 @@ ENV PHP_OPCACHE_ENABLE=1
 WORKDIR /var/www/html
 
 # Copy application files
-COPY --chown=9999:9999 backend/ /var/www/html/
+COPY --chown=9999:9999 . /var/www/html/
 
 # Prepare .env for build
 RUN cp /var/www/html/.env.example /var/www/html/.env || true
