@@ -9,7 +9,10 @@ WORKDIR /var/www/html
 # Copy application files
 COPY --chown=9999:9999 backend/ /var/www/html/
 
+# Prepare .env for build
+RUN cp /var/www/html/.env.example /var/www/html/.env || true
+
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 EXPOSE 8080
