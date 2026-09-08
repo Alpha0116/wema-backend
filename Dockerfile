@@ -1,4 +1,4 @@
-FROM serversideup/php:8.3-fpm-nginx
+FROM serversideup/php:8.4-fpm-nginx
 
 ENV AUTORUN_ENABLED=true
 ENV SSL_MODE=off
@@ -12,7 +12,7 @@ COPY --chown=9999:9999 . /var/www/html/
 # Prepare .env for build
 RUN cp /var/www/html/.env.example /var/www/html/.env || true
 
-# Install PHP dependencies with platform reqs ignored for cloud compatibility
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-reqs
 
 EXPOSE 8080
